@@ -206,6 +206,30 @@ async def health_check():
     }
 
 
+@app.get("/debug/memory")
+async def debug_memory():
+    """Debug endpoint to verify memory/context loading"""
+    try:
+        from resources import linkedin, summary, facts, style
+        return {
+            "status": "success",
+            "memory_loaded": True,
+            "facts": facts,
+            "summary_length": len(summary),
+            "linkedin_length": len(linkedin),
+            "style_length": len(style),
+            "summary_preview": summary[:100] + "..." if len(summary) > 100 else summary,
+            "linkedin_preview": linkedin[:100] + "..." if len(linkedin) > 100 else linkedin,
+            "style_preview": style[:100] + "..." if len(style) > 100 else style
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "memory_loaded": False,
+            "error": str(e)
+        }
+
+
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:

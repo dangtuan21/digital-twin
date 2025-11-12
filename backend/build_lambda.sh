@@ -31,10 +31,46 @@ cd "$LAMBDA_PACKAGE"
 zip -r "$DEPLOYMENT_ZIP" .
 cd "$BACKEND_DIR"
 
-# Add test handler for pydantic_core import
-cp "$BACKEND_DIR/test_lambda_pydantic_core.py" "$LAMBDA_PACKAGE/lambda_handler.py"
+# Copy application files
+echo "Copying application files..."
+
+# Copy the actual lambda handler (not the test one)
+cp "$BACKEND_DIR/lambda_handler.py" "$LAMBDA_PACKAGE/"
+echo "  ✓ Copied lambda_handler.py"
+
+# Copy core application files
+for file in "server.py" "context.py" "resources.py"; do
+  if [ -f "$BACKEND_DIR/$file" ]; then
+    cp "$BACKEND_DIR/$file" "$LAMBDA_PACKAGE/"
+    echo "  ✓ Copied $file"
+  else
+    echo "  ⚠️  Warning: $file not found"
+  fi
+done
+
+# Copy data directory with memory/context files
+if [ -d "$BACKEND_DIR/data" ]; then
+  cp -r "$BACKEND_DIR/data" "$LAMBDA_PACKAGE/"
+  echo "  ✓ Copied data directory"
+else
+  echo "  ⚠️  Warning: data directory not found"
+fi
+
+# Copy environment file if it exists
+if [ -f "$BACKEND_DIR/.env" ]; then
+  cp "$BACKEND_DIR/.env" "$LAMBDA_PACKAGE/"
+  echo "  ✓ Copied .env file"
+fi
+
+# Add all application files to zip
 cd "$LAMBDA_PACKAGE"
-zip -g "$DEPLOYMENT_ZIP" lambda_handler.py
+zip -g "$DEPLOYMENT_ZIP" lambda_handler.py server.py context.py resources.py
+if [ -d "data" ]; then
+  zip -r "$DEPLOYMENT_ZIP" data/
+fi
+if [ -f ".env" ]; then
+  zip -g "$DEPLOYMENT_ZIP" .env
+fi
 cd "$BACKEND_DIR"
 
 # Output result

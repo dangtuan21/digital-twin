@@ -1,9 +1,19 @@
 from resources import linkedin, summary, facts, style
 from datetime import datetime
+import logging
 
+# Set up logging
+logger = logging.getLogger(__name__)
 
 full_name = facts["full_name"]
 name = facts["name"]
+
+# Debug logging to verify memory loading
+logger.info(f"Context loaded - Full name: {full_name}, Name: {name}")
+logger.info(f"Facts loaded: {len(str(facts))} characters")
+logger.info(f"Summary loaded: {len(summary)} characters")
+logger.info(f"LinkedIn loaded: {len(linkedin)} characters")
+logger.info(f"Style loaded: {len(style)} characters")
 
 
 def prompt():
