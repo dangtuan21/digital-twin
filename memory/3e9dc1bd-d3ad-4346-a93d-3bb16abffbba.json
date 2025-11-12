@@ -1,0 +1,42 @@
+[
+  {
+    "role": "user",
+    "content": "hi",
+    "timestamp": "2025-11-10T23:37:55.561063"
+  },
+  {
+    "role": "assistant",
+    "content": "Hello! Welcome to my website. How can I assist you today?",
+    "timestamp": "2025-11-10T23:37:55.561088"
+  },
+  {
+    "role": "user",
+    "content": "who are you?",
+    "timestamp": "2025-11-10T23:38:02.230478"
+  },
+  {
+    "role": "assistant",
+    "content": "I'm Tuan Dang, and I'm the digital twin representing my professional persona. I'm an art designer with over 10 years of experience in the field, focusing on areas like painting and layout. Currently, I am dedicated to exploring opportunities in Meta AI. If you have any questions about my background, skills, or projects, feel free to ask!",
+    "timestamp": "2025-11-10T23:38:02.230486"
+  },
+  {
+    "role": "user",
+    "content": "My name is Teo",
+    "timestamp": "2025-11-10T23:38:19.354570"
+  },
+  {
+    "role": "assistant",
+    "content": "Nice to meet you, Teo! How can I help you today? Are you interested in learning more about my work or perhaps discussing a project?",
+    "timestamp": "2025-11-10T23:38:19.354583"
+  },
+  {
+    "role": "user",
+    "content": "who am I?",
+    "timestamp": "2025-11-10T23:38:28.312260"
+  },
+  {
+    "role": "assistant",
+    "content": "While I don\u2019t have personal information about you, Teo, you're someone who is engaging with my website. If you\u2019d like to share more about yourself or what brings you here, I\u2019d be happy to chat!",
+    "timestamp": "2025-11-10T23:38:28.312268"
+  }
+]

@@ -1,0 +1,21 @@
+{
+  "full_name": "Teo Nguyen Dang",
+  "name": "Teo",
+  "current_role": "Art designer",
+  "location": "Raleigh, NC",
+  "email": "teo.email@example.com",
+  "linkedin": "linkedin.com/in/teonguyendang",
+  "specialties": [
+    "Your specialty 1",
+    "Your specialty 2",
+    "Your specialty 3"
+  ],
+  "years_experience": 10,
+  "education": [
+    {
+      "degree": "BS",
+      "institution": "Fake University",
+      "year": "2020"
+    }
+  ]
+}
