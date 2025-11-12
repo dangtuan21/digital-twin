@@ -13,6 +13,11 @@ from context import prompt
 import logging
 import sys
 
+# AWS X-Ray imports
+from aws_xray_sdk.core import xray_recorder
+from aws_xray_sdk.core import patch_all
+from aws_xray_sdk.fastapi import XRayMiddleware
+
 # Configure logging for CloudWatch
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -20,7 +25,19 @@ logger.setLevel(logging.INFO)
 # Load environment variables
 load_dotenv()
 
+# Configure X-Ray
+xray_recorder.configure(
+    context_missing='LOG_ERROR',
+    service='digital-twin-api'
+)
+
+# Patch AWS SDK calls for automatic tracing
+patch_all()
+
 app = FastAPI()
+
+# Add X-Ray middleware
+app.add_middleware(XRayMiddleware)
 
 # Configure CORS
 origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
@@ -78,6 +95,7 @@ def get_memory_path(session_id: str) -> str:
     return f"{session_id}.json"
 
 
+@xray_recorder.capture('load_conversation')
 def load_conversation(session_id: str) -> List[Dict]:
     """Load conversation history from storage"""
     # Both logging and flushed print for CloudWatch visibility
@@ -85,6 +103,10 @@ def load_conversation(session_id: str) -> List[Dict]:
     logger.info(debug_msg)
     print(debug_msg, flush=True)
     sys.stdout.flush()
+    
+    # Add X-Ray metadata
+    xray_recorder.put_metadata('session_id', session_id)
+    xray_recorder.put_metadata('storage_type', 'S3' if USE_S3 else 'local')
     
     if USE_S3:
         try:
@@ -110,6 +132,7 @@ def load_conversation(session_id: str) -> List[Dict]:
         return []
 
 
+@xray_recorder.capture('save_conversation')
 def save_conversation(session_id: str, messages: List[Dict]):
     """Save conversation history to storage"""
     # Debug logging for save operation
@@ -117,6 +140,11 @@ def save_conversation(session_id: str, messages: List[Dict]):
     logger.info(debug_msg)
     print(debug_msg, flush=True)
     sys.stdout.flush()
+    
+    # Add X-Ray metadata
+    xray_recorder.put_metadata('session_id', session_id)
+    xray_recorder.put_metadata('message_count', len(messages))
+    xray_recorder.put_metadata('storage_type', 'S3' if USE_S3 else 'local')
     
     if USE_S3:
         s3_client.put_object(
@@ -133,8 +161,14 @@ def save_conversation(session_id: str, messages: List[Dict]):
             json.dump(messages, f, indent=2)
 
 
+@xray_recorder.capture('call_bedrock')
 def call_bedrock(conversation: List[Dict], user_message: str) -> str:
     """Call AWS Bedrock with conversation history"""
+    
+    # Add X-Ray metadata
+    xray_recorder.put_metadata('model_id', BEDROCK_MODEL_ID)
+    xray_recorder.put_metadata('conversation_length', len(conversation))
+    xray_recorder.put_metadata('user_message_length', len(user_message))
     
     # Build messages in Bedrock format
     messages = []

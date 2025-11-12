@@ -119,6 +119,11 @@ resource "aws_iam_role_policy_attachment" "lambda_s3" {
   role       = aws_iam_role.lambda_role.name
 }
 
+resource "aws_iam_role_policy_attachment" "lambda_xray" {
+  policy_arn = "arn:aws:iam::aws:policy/AWSXRayDaemonWriteAccess"
+  role       = aws_iam_role.lambda_role.name
+}
+
 # Lambda function
 resource "aws_lambda_function" "api" {
   filename         = "${path.module}/../backend/lambda-deployment.zip"
@@ -127,9 +132,14 @@ resource "aws_lambda_function" "api" {
   handler          = "lambda_handler.handler"
   source_code_hash = filebase64sha256("${path.module}/../backend/lambda-deployment.zip")
   runtime          = "python3.13"
-    architectures    = ["x86_64"]
+  architectures    = ["x86_64"]
   timeout          = var.lambda_timeout
   tags             = local.common_tags
+
+  # Enable X-Ray tracing
+  tracing_config {
+    mode = "Active"
+  }
 
   environment {
     variables = {

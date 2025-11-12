@@ -7,3 +7,4 @@ pypdf
 mangum
 pydantic>=2.0.0
 pydantic-core
+aws-xray-sdk

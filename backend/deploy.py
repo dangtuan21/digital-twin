@@ -29,6 +29,7 @@ pypdf
 boto3
 python-multipart
 uvicorn
+aws-xray-sdk
 """
     
     with open("temp_requirements.txt", "w") as f:
