@@ -35,7 +35,8 @@ uvicorn
         f.write(temp_requirements.strip())
 
     try:
-        # Use Python 3.13 Lambda runtime and install all dependencies with proper platform targeting
+        # Use Python 3.13 Lambda runtime and install all dependencies
+        # Let Docker handle the platform targeting naturally
         subprocess.run([
             "docker", "run", "--rm", 
             "-v", f"{os.getcwd()}:/var/task",
@@ -49,12 +50,7 @@ uvicorn
             -r temp_requirements.txt \
             --no-cache-dir \
             --disable-pip-version-check \
-            --upgrade \
-            --only-binary=:all: \
-            --platform linux_x86_64 \
-            --implementation cp \
-            --python-version 3.13 \
-            --abi cp313
+            --upgrade
             """
         ], check=True)
     finally:
