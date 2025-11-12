@@ -16,7 +16,6 @@ import sys
 # AWS X-Ray imports
 from aws_xray_sdk.core import xray_recorder
 from aws_xray_sdk.core import patch_all
-from aws_xray_sdk.fastapi import XRayMiddleware
 
 # Configure logging for CloudWatch
 logger = logging.getLogger()
@@ -35,9 +34,6 @@ xray_recorder.configure(
 patch_all()
 
 app = FastAPI()
-
-# Add X-Ray middleware
-app.add_middleware(XRayMiddleware)
 
 # Configure CORS
 origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
@@ -266,7 +262,13 @@ async def debug_memory():
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
+    # Start X-Ray subsegment for the chat endpoint
+    subsegment = xray_recorder.begin_subsegment('chat_endpoint')
     try:
+        # Add request metadata to X-Ray
+        xray_recorder.put_metadata('request_message_length', len(request.message))
+        xray_recorder.put_metadata('session_id', request.session_id or 'default-session')
+        
         # Generate session ID: use readable name if possible
         def is_uuid(s):
             import re
@@ -298,16 +300,26 @@ async def chat(request: ChatRequest):
         # Save conversation
         save_conversation(session_id, conversation)
 
+        # Add response metadata
+        xray_recorder.put_metadata('response_length', len(assistant_response))
+        xray_recorder.put_metadata('total_messages', len(conversation))
+
         return ChatResponse(response=assistant_response, session_id=session_id)
 
     except HTTPException:
+        xray_recorder.put_metadata('error_type', 'HTTPException')
         raise
     except Exception as e:
         error_msg = f"Error in chat endpoint: {str(e)}"
         logger.error(error_msg)
         print(error_msg, flush=True)
         sys.stdout.flush()
+        xray_recorder.put_metadata('error_type', 'Exception')
+        xray_recorder.put_metadata('error_message', str(e))
         raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        # End the X-Ray subsegment
+        xray_recorder.end_subsegment()
 
 
 @app.get("/conversation/{session_id}")
